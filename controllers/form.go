@@ -53,7 +53,7 @@ func (c *MainController) Post() {
 	)
 	if len(c.Ctx.Input.RequestBody) > MaxPostLen {
 		code = Failed
-		err = fmt.Errorf("len(requestBody)%d should <=%v", len(c.Ctx.Input.RequestBody), MaxPostLen)
+		err = fmt.Errorf("len(requestBody)%d should small than %v", len(c.Ctx.Input.RequestBody), MaxPostLen)
 		goto end
 	}
 
