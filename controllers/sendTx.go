@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/QuarkChain/goquarkchain/account"
@@ -10,19 +11,41 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ybbus/jsonrpc"
+	"io/ioutil"
 	"math/big"
+	"os"
 	"sync"
 )
 
+type LocalConfig struct {
+	Private   string `json:"PrivateKey"`
+	Host      string `json:"Host"`
+	NetWorkID uint32 `json:"NetWorkID"`
+}
+
+func LoadConfig() *LocalConfig {
+	conf := new(LocalConfig)
+	f, err := os.Open("./localConfig.json")
+	if err != nil {
+		panic(err)
+	}
+	buffer, err := ioutil.ReadAll(f)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(buffer, conf)
+	return conf
+}
+
 var (
-	sdk            = NewQKCSDK()
-	host           = "http://50.112.62.65:38391"
-	accountPrivKey = "deb9010341b0aad25898017552177bd3fc88a9114a74316db871234b6f7eaa9f"
-	networkID      = uint32(255)
-	gasLimit       = uint64(6000000)
-	MaxPostLen     = (int(gasLimit) - 21000) / 68
-	emptyAddress   = common.Address{}
-	token          = TokenIDEncode("QKC")
+	localConfig  = LoadConfig()
+	sdk          = NewQKCSDK()
+	gasLimit     = uint64(6000000)
+	gasPrice     = new(big.Int).SetUint64(1000000000)
+	MaxPostLen   = (int(gasLimit) - 21000) / 68
+	emptyAddress = common.Address{}
+	token        = TokenIDEncode("QKC")
+	fullShardID  = 262145
 )
 
 type QKCSDK struct {
@@ -34,13 +57,14 @@ type QKCSDK struct {
 }
 
 func NewQKCSDK() *QKCSDK {
-	acc, err := account.NewAccountWithKey(account.BytesToIdentityKey(common.FromHex(accountPrivKey)))
+	acc, err := account.NewAccountWithKey(account.BytesToIdentityKey(common.FromHex(localConfig.Private)))
+	acc.QKCAddress = acc.QKCAddress.AddressInBranch(account.Branch{Value: uint32(fullShardID)})
 	if err != nil {
 		panic(err)
 	}
 
 	q := &QKCSDK{
-		jrpcHost:    jsonrpc.NewClient(host),
+		jrpcHost:    jsonrpc.NewClient(localConfig.Host),
 		signAccount: acc,
 	}
 	q.resetNonce()
@@ -61,7 +85,7 @@ func (q *QKCSDK) resetNonce() {
 }
 
 func (q *QKCSDK) SendFormData(nonce uint64, payLoad []byte) (string, error) {
-	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, new(big.Int), 0, 0, token, token, networkID, 0, payLoad)
+	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, gasPrice, uint32(fullShardID), uint32(fullShardID), token, token, localConfig.NetWorkID, 0, payLoad)
 	prvKey, err := crypto.ToECDSA(common.FromHex(q.signAccount.PrivateKey()))
 	if err != nil {
 		return "", err
