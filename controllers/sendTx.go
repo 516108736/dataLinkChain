@@ -23,6 +23,7 @@ var (
 	MaxPostLen     = (int(gasLimit) - 21000) / 68
 	emptyAddress   = common.Address{}
 	token          = TokenIDEncode("QKC")
+	fullShardID    = 262145
 )
 
 type QKCSDK struct {
@@ -35,6 +36,7 @@ type QKCSDK struct {
 
 func NewQKCSDK() *QKCSDK {
 	acc, err := account.NewAccountWithKey(account.BytesToIdentityKey(common.FromHex(accountPrivKey)))
+	acc.QKCAddress = acc.QKCAddress.AddressInBranch(account.Branch{Value: uint32(fullShardID)})
 	if err != nil {
 		panic(err)
 	}
@@ -61,7 +63,7 @@ func (q *QKCSDK) resetNonce() {
 }
 
 func (q *QKCSDK) SendFormData(nonce uint64, payLoad []byte) (string, error) {
-	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, new(big.Int), 0, 0, token, token, networkID, 0, payLoad)
+	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, new(big.Int), uint32(fullShardID), uint32(fullShardID), token, token, networkID, 0, payLoad)
 	prvKey, err := crypto.ToECDSA(common.FromHex(q.signAccount.PrivateKey()))
 	if err != nil {
 		return "", err
