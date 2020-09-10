@@ -16,7 +16,7 @@ import (
 
 var (
 	opType  = flag.String("type", "", "encrypt or run")
-	private = flag.String("private", "", "private key")
+	private = flag.String("private_key", "", "private key")
 	pass    = flag.String("password", "", "password")
 	host    = flag.String("host", "", "host")
 )
