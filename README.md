@@ -20,7 +20,27 @@
     + 测试网："http://50.112.62.65:38391" 
 - NetWorkID:链的networkid
     +主网：1
-    +测试网：255
+    +测试网：255    
+    
+供测试的配置：
+-   主网
+       +   ```bash
+           {
+             "PrivateKey": "0xdeb9010341b0aad25898017552177bd3fc88a9114a74316db871234b6f7eaa9f",
+             "Host": "http://34.222.230.172:38391",
+             "NetWorkID":1
+           }
+           ```  
+-   测试网
+       +    ```bash
+            {
+              "PrivateKey": "0x5a546e1cab61bda07dd9d964af917bd4bfb24bcb067c86ef479225772bce0053",
+              "Host": "http://50.112.62.65:38391",
+              "NetWorkID":255
+            } 
+            ```  
+
+           
 
 启动方式
 ```bash
