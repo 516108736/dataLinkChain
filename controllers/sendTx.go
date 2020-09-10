@@ -41,6 +41,7 @@ var (
 	localConfig  = LoadConfig()
 	sdk          = NewQKCSDK()
 	gasLimit     = uint64(6000000)
+	gasPrice     = uint64(1000000000)
 	MaxPostLen   = (int(gasLimit) - 21000) / 68
 	emptyAddress = common.Address{}
 	token        = TokenIDEncode("QKC")
@@ -84,7 +85,7 @@ func (q *QKCSDK) resetNonce() {
 }
 
 func (q *QKCSDK) SendFormData(nonce uint64, payLoad []byte) (string, error) {
-	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, new(big.Int), uint32(fullShardID), uint32(fullShardID), token, token, localConfig.NetWorkID, 0, payLoad)
+	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, gasPrice, uint32(fullShardID), uint32(fullShardID), token, token, localConfig.NetWorkID, 0, payLoad)
 	prvKey, err := crypto.ToECDSA(common.FromHex(q.signAccount.PrivateKey()))
 	if err != nil {
 		return "", err
