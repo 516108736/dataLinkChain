@@ -41,7 +41,7 @@ var (
 	localConfig  = LoadConfig()
 	sdk          = NewQKCSDK()
 	gasLimit     = uint64(6000000)
-	gasPrice     = uint64(1000000000)
+	gasPrice     = new(big.Int).SetUint64(1000000000)
 	MaxPostLen   = (int(gasLimit) - 21000) / 68
 	emptyAddress = common.Address{}
 	token        = TokenIDEncode("QKC")
