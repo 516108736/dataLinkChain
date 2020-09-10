@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/QuarkChain/goquarkchain/account"
@@ -11,35 +10,12 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ybbus/jsonrpc"
-	"io/ioutil"
 	"math/big"
-	"os"
 	"sync"
 )
 
-type LocalConfig struct {
-	Private   string `json:"PrivateKey"`
-	Host      string `json:"Host"`
-	NetWorkID uint32 `json:"NetWorkID"`
-}
-
-func LoadConfig() *LocalConfig {
-	conf := new(LocalConfig)
-	f, err := os.Open("./localConfig.json")
-	if err != nil {
-		panic(err)
-	}
-	buffer, err := ioutil.ReadAll(f)
-	if err != nil {
-		panic(err)
-	}
-	err = json.Unmarshal(buffer, conf)
-	return conf
-}
-
 var (
-	localConfig  = LoadConfig()
-	sdk          = NewQKCSDK()
+	SDK          = new(QKCSDK)
 	gasLimit     = uint64(6000000)
 	gasPrice     = new(big.Int).SetUint64(1000000000)
 	MaxPostLen   = (int(gasLimit) - 21000) / 68
@@ -53,22 +29,55 @@ type QKCSDK struct {
 	signAccount account.Account
 	mu          sync.Mutex
 
-	nonce uint64
+	nonce     uint64
+	networkID uint32
 }
 
-func NewQKCSDK() *QKCSDK {
-	acc, err := account.NewAccountWithKey(account.BytesToIdentityKey(common.FromHex(localConfig.Private)))
-	acc.QKCAddress = acc.QKCAddress.AddressInBranch(account.Branch{Value: uint32(fullShardID)})
+func NewQKCSDK(privateKey, host string) *QKCSDK {
+	acc, err := account.NewAccountWithKey(account.BytesToIdentityKey(common.FromHex(privateKey)))
 	if err != nil {
 		panic(err)
 	}
+	acc.QKCAddress = acc.QKCAddress.AddressInBranch(account.Branch{Value: uint32(fullShardID)})
 
 	q := &QKCSDK{
-		jrpcHost:    jsonrpc.NewClient(localConfig.Host),
+		jrpcHost:    jsonrpc.NewClient(host),
 		signAccount: acc,
 	}
+	q.networkID = q.GetNetWorkID()
 	q.resetNonce()
+	q.BalanceCheck()
 	return q
+}
+
+func (q *QKCSDK) BalanceCheck() {
+	fmt.Println("签名账户为", q.signAccount.QKCAddress.ToHex())
+	fmt.Println("nonce:", q.nonce)
+
+	data, err := q.GetAccountData(true)
+	if err != nil {
+		panic(err)
+	}
+	qkcValue := new(big.Int)
+
+	bal, ok := data["balances"]
+	if !ok || len(bal.([]interface{})) == 0 {
+
+	} else {
+		bList := bal.([]interface{})
+		for index := 0; index < len(bList); index++ {
+			b := bList[index].(map[string]interface{})
+
+			qkcValue, err = hexutil.DecodeBig(b["balance"].(string))
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("token:", b["tokenStr"], ", balance(wei):", qkcValue)
+		}
+	}
+	if qkcValue.Cmp(new(big.Int)) == 0 {
+		panic(fmt.Errorf("account %s have no qkc", q.signAccount.QKCAddress.ToHex()))
+	}
 }
 
 func (q *QKCSDK) resetNonce() {
@@ -85,7 +94,7 @@ func (q *QKCSDK) resetNonce() {
 }
 
 func (q *QKCSDK) SendFormData(nonce uint64, payLoad []byte) (string, error) {
-	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, gasPrice, uint32(fullShardID), uint32(fullShardID), token, token, localConfig.NetWorkID, 0, payLoad)
+	tx := newEvmTransaction(nonce, &emptyAddress, new(big.Int), gasLimit, gasPrice, uint32(fullShardID), uint32(fullShardID), token, token, q.networkID, 0, payLoad)
 	prvKey, err := crypto.ToECDSA(common.FromHex(q.signAccount.PrivateKey()))
 	if err != nil {
 		return "", err
@@ -174,4 +183,19 @@ func (q *QKCSDK) GetTransactionById(txid string) (result []byte, err error) {
 		return nil, fmt.Errorf("txid %v not in the chain", txid)
 	}
 	return hex.DecodeString(resp.Result.(map[string]interface{})["data"].(string)[2:])
+}
+
+func (q *QKCSDK) GetNetWorkID() uint32 {
+	resp, err := q.jrpcHost.Call("networkInfo")
+	if err != nil {
+		panic(err)
+	}
+	if resp.Error != nil {
+		panic(resp.Error)
+	}
+	networkId, err := hexutil.DecodeUint64(resp.Result.(map[string]interface{})["networkId"].(string))
+	if err != nil {
+		panic(err)
+	}
+	return uint32(networkId)
 }

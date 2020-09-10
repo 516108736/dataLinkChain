@@ -1,7 +1,11 @@
 # 数据上链
 
 ## 介绍
-数据上链服务，主要是为了在[QuarkChain](http://devnet.quarkchain.io/)链上存放数据   
+数据上链服务，主要是为了在QuarkChain链上存放数据
+支持以下网络
+-   主网区块浏览器: https://mainnet.quarkchain.io/
+-   测试网区块浏览器: https://devnet.quarkchain.io/
+   
 支持以下操作  
 - 数据上链  
 - 数据查询
@@ -11,45 +15,26 @@
 
 ## 服务启动
 
-### 配置说明:   
-- PrivateKey:QKC的钱包账户私钥
-    + 主网: 请到[这里](https://mainnet.quarkchain.io/wallet)申请并查看QKC余额 
-    + 测试网：请到[这里](https://devnet.quarkchain.io/wallet)申请并查看QKC余额
-- Host:链对外提供的接口
-    + 主网：  "http://34.222.230.172:38391"
-    + 测试网："http://50.112.62.65:38391" 
-- NetWorkID:链的networkid
-    + 主网：1
-    + 测试网：255    
-    
-### 供测试的配置:(填写在localConfig.json内)
--   主网
-       +   ```bash
-           {
-             "PrivateKey": "0xdeb9010341b0aad25898017552177bd3fc88a9114a74316db871234b6f7eaa9f",
-             "Host": "http://34.222.230.172:38391",
-             "NetWorkID":1
-           }
-           ```  
--   测试网
-       +    ```bash
-            {
-              "PrivateKey": "0x5a546e1cab61bda07dd9d964af917bd4bfb24bcb067c86ef479225772bce0053",
-              "Host": "http://50.112.62.65:38391",
-              "NetWorkID":255
-            } 
-            ```  
-
-           
-
 ### 启动方式
 ```bash
 # Clone the repository
 mkdir -p $GOPATH/src/github.com/516108736
 cd $GOPATH/src/github.com/516108736
 git clone https://github.com/516108736/dataLinkChain
-# 填写localConfig.json
-go run main.go
+go build
+
+# 申请私钥:到指定的区块链浏览器页面申请账户
+
+# 申请QKC:
+    主网：联系QKC官方人员获取
+    测试网：https://devnet.quarkchain.io/faucet
+
+# 将私钥进行加密处理
+./dataLinkChain -type=encrypt --private=****************************************************************** --password=qkc
+
+# 上面命令会生成新的私钥
+./dataLinkChain --private=****************************************************************** --password=qkc --host="http://50.112.62.65:38391"
+
 ```
 
 ## 调用方式

@@ -29,7 +29,7 @@ func (c *MainController) Get() {
 	txHash := c.GetString("txHash")
 	code := Succ
 	fmt.Println("READY GET", "txHash", txHash)
-	ret, err := sdk.GetTransactionById(txHash)
+	ret, err := SDK.GetTransactionById(txHash)
 	if err != nil {
 		code = Failed
 	}
@@ -63,7 +63,7 @@ func (c *MainController) Post() {
 		goto end
 	}
 
-	hash, err = sdk.SendFormData(sdk.GetNonce(), c.Ctx.Input.RequestBody)
+	hash, err = SDK.SendFormData(SDK.GetNonce(), c.Ctx.Input.RequestBody)
 	if err != nil {
 		code = Failed
 	}
@@ -74,7 +74,7 @@ func (c *MainController) Post() {
 
 end:
 	if code == Failed {
-		sdk.resetNonce()
+		SDK.resetNonce()
 	}
 	c.Data["json"] = &ReturnMsg{
 		Code: code,
