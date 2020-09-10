@@ -11,7 +11,7 @@
 
 ## 服务启动
 
-配置说明:   
+### 配置说明:   
 - PrivateKey:QKC的钱包账户私钥
     + 主网: 请到[这里](https://mainnet.quarkchain.io/wallet)申请并查看QKC余额 
     + 测试网：请到[这里](https://devnet.quarkchain.io/wallet)申请并查看QKC余额
@@ -22,7 +22,7 @@
     + 主网：1
     + 测试网：255    
     
-供测试的配置:(填写在localConfig.json内)
+### 供测试的配置:(填写在localConfig.json内)
 -   主网
        +   ```bash
            {
@@ -42,7 +42,7 @@
 
            
 
-启动方式
+### 启动方式
 ```bash
 # Clone the repository
 mkdir -p $GOPATH/src/github.com/516108736
