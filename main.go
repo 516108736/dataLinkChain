@@ -46,7 +46,9 @@ func encrypt() {
 }
 
 func decrypt() string {
-	check()
+	if *pass == "" {
+		return *private
+	}
 	pByte, err := hex.DecodeString(*private)
 	if err != nil {
 		panic(encrypt)
