@@ -35,10 +35,10 @@ go build
     打开上述区块浏览器，右上角可用看到部分节点的IP(启动时需"--host=***"来指明)
 
 # 将私钥进行加密处理
-./dataLinkChain -type=encrypt --private=****************************************************************** --password=qkc
+./dataLinkChain -type=encrypt --private=申请到的私钥 --password=qkc
 
 # 上面命令会生成新的私钥
-./dataLinkChain --private=****************************************************************** --password=qkc --host="http://34.222.230.172:38391"
+./dataLinkChain --private=上个命令加密后的字符串 --password=qkc --host="http://34.222.230.172:38391"
 
 ```
 
