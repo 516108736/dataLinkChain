@@ -31,11 +31,14 @@ go build
     主网：联系QKC官方人员获取
     测试网：https://devnet.quarkchain.io/faucet
 
+# 查看指定网络的可用host
+    打开上述区块浏览器，右上角可用看到部分节点的IP(启动时需"--host=***"来指明)
+
 # 将私钥进行加密处理
 ./dataLinkChain -type=encrypt --private=****************************************************************** --password=qkc
 
 # 上面命令会生成新的私钥
-./dataLinkChain --private=****************************************************************** --password=qkc --host="http://50.112.62.65:38391"
+./dataLinkChain --private=****************************************************************** --password=qkc --host="http://34.222.230.172:38391"
 
 ```
 
@@ -45,6 +48,7 @@ go build
     注意：
         1.数据格式必须为json格式
         2.目前数目长度最大为87926(byte) 
+        
     curl -X POST -H 'content-type: application/json' --data '{"序号":123,"材料名称":"螺栓","材料类别":"土建","出库数量":666777888999000}' http://*.*.*.*:8080/
     
 
